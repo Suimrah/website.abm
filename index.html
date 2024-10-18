@@ -507,7 +507,7 @@
     ></script>
     <script type="application/ld+json">
       {
-        "@context": "http://schema.org",
+        "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "ABM Energy Technical Services, LLC",
         "telephone": "+1 ",
@@ -525,6 +525,7 @@
         ]
       }
     </script>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ld5uWQqAAAAAAhf1waAsDCFGEf4vk_kDir7XKR5"></script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -575,8 +576,10 @@
         </h1>
         <h3>Critical Power | Energy Efficiency | Switchgear Controls</h3>
         <a class="show-popup" data-target="quote"><div>Request a Quote</div></a>
-        <h5>A Schneider Electric EcoXpert Partner</h5>
-        <h5>Schneider Electric's Alliance Registered System Integrator Partner</h5>
+        <h5>
+          A Schneider Electric Critical Power EcoXpert and Alliance Registered System Integrator
+          Partner
+        </h5>
       </div>
     </header>
     <section id="industries">
@@ -776,7 +779,7 @@
     </section>
     <div id="quote" class="popup hide">
       <div class="popup-center">
-        <form action="send_mail.php" method="post" class="left" data-gtm-event="contact">
+        <form method="post" class="left" data-gtm-event="contact">
           <p>Get a Quote</p>
           <input name="name" placeholder="Name" required />
           <input name="email" type="email" placeholder="Email" required />
@@ -838,6 +841,22 @@
         </div>
       </div>
     </div>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcRUmUqAAAAAPEwBgQdxZGUxk9q8x45zlTISynR"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        grecaptcha.ready(function () {
+          grecaptcha
+            .execute('6LcRUmUqAAAAAPEwBgQdxZGUxk9q8x45zlTISynR', { action: 'contact' })
+            .then(function (token) {
+              // Add the token to the hidden input field
+              const recaptchaResponse = document.querySelector(
+                'input[name="g-recaptcha-response"]'
+              );
+              recaptchaResponse.value = token;
+            });
+        });
+      });
+    </script>
     <script>
       window.lw8Options = window.lw8Options || {};
       window.lw8Options.hideNavBackground = true;
@@ -853,6 +872,47 @@
       document.querySelectorAll('a.show-popup.quote').forEach((popup) => {
         popup.addEventListener('click', function () {
           document.querySelector('#quote form select').value = this.getAttribute('data-payload');
+        });
+      });
+    </script>
+    <script>
+      document.querySelector('form').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        const formData = new FormData(event.target); // Collect form data
+
+        grecaptcha.ready(function () {
+          grecaptcha
+            .execute('6LcRUmUqAAAAAPEwBgQdxZGUxk9q8x45zlTISynR', { action: 'contact' })
+            .then(function (token) {
+              formData.append('g-recaptcha-response', token); // Add reCAPTCHA token
+
+              fetch('send_mail.php', {
+                method: 'POST',
+                body: formData,
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    // If the response is not OK, throw an error
+                    throw new Error('Network response was not ok');
+                  }
+
+                  return response.json(); // Attempt to parse JSON
+                })
+                .then((data) => {
+                  if (data.status === 'success') {
+                    alert(data.message); // Success alert
+                    event.target.reset(); // Reset form
+                    document.querySelector('.popup').classList.add('hide'); // Hide popup
+                  } else {
+                    alert(data.message); // Show error message
+                  }
+                })
+                .catch((error) => {
+                  console.error('Error:', error);
+                  alert('There was an issue with your submission. Please try again.');
+                });
+            });
         });
       });
     </script>

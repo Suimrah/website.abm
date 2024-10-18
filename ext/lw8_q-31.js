@@ -32,7 +32,8 @@
           try {
             lw8.adjustHeaderHeight();
           } catch (e) {
-            lw8.logEvent(e);
+            console.log(e);
+            // lw8.logEvent(e);
           }
         });
 
@@ -47,7 +48,8 @@
           this.setupPushNotifications(window.lw8Options.pushRequestElement || document);
       }
     } catch (e) {
-      this.logEvent(e);
+      console.log(e);
+      //   this.logEvent(e);
     }
   }
 
@@ -106,9 +108,15 @@
     obj = obj || {};
     var xHTTP = new XMLHttpRequest();
     xHTTP.onreadystatechange = function () {
+      if (this.responseText.trim().startsWith('<')) {
+        throw new Error('HTML response received instead of JSON.');
+      }
+      console.log('Ready state', this.readyState);
       if (this.readyState === 4) {
         try {
+          console.log('Response text', this.responseText);
           var response = JSON.parse(this.responseText);
+
           if (response.status === 'ok') {
             typeof success === 'function' && success(response);
           } else {
@@ -125,10 +133,12 @@
               window.location.href = response.redirect;
             }
           }
-          var i = 0;
+          console.log('Notifications', response.notifications);
+          console.log('Status', response.status);
+
           if (response.notifications) {
-            for (; i < response.notifications.length; i++) {
-              lw8.addNotification(
+            for (let i = 0; i < response.notifications.length; i++) {
+              _lw8.addNotification(
                 response.notifications[i].type,
                 response.notifications[i].message,
                 response.notifications[i].persistent
@@ -137,16 +147,17 @@
           }
           i === 0 &&
             !quiet &&
-            lw8.addNotification(response.status === 'ok' ? 'success' : 'error', response.status);
-          lw8.setupSession();
+            _lw8.addNotification(response.status === 'ok' ? 'success' : 'error', response.status);
+          _lw8.setupSession();
         } catch (e) {
-          lw8.addNotification(
+          _lw8.addNotification(
             'error',
             'There was an error processing your request. Please try again later.'
           );
           typeof error === 'function' && error(response);
           typeof complete === 'function' && complete(response);
-          lw8.logEvent(e);
+          console.log('Error', e);
+          //   lw8.logEvent(e);
         }
       }
     };
@@ -303,21 +314,21 @@
 
   _lw8.prototype.logEvent = function (event, eventType, eventStatus) {
     console.log(event);
-    if (event instanceof Error) {
-      event = event.stack;
-    }
-    eventType = eventType || 4;
-    eventStatus = eventStatus || 0;
-    var xHTTP = new XMLHttpRequest();
-    xHTTP.open('POST', '/log-event', true);
-    xHTTP.setRequestHeader('Content-Type', 'application/json');
-    xHTTP.send(
-      JSON.stringify({
-        event: window.location.pathname + ' - ' + event,
-        eventType: eventType,
-        eventStatus: eventStatus,
-      })
-    );
+    // if (event instanceof Error) {
+    //   event = event.stack;
+    // }
+    // eventType = eventType || 4;
+    // eventStatus = eventStatus || 0;
+    // var xHTTP = new XMLHttpRequest();
+    // xHTTP.open('POST', '/log-event', true);
+    // xHTTP.setRequestHeader('Content-Type', 'application/json');
+    // xHTTP.send(
+    //   JSON.stringify({
+    //     event: window.location.pathname + ' - ' + event,
+    //     eventType: eventType,
+    //     eventStatus: eventStatus,
+    //   })
+    // );
   };
 
   _lw8.prototype.prependAjaxHTML = function (url, target) {
